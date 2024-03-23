@@ -1,0 +1,129 @@
+include <SFML/Graphics.hpp>
+#include <iostream> 
+
+
+int main() {
+    // Create the window with fullscreen mode
+    sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Main Menu", sf::Style::Fullscreen);
+
+    // Load background image for main menu
+    sf::Texture mainMenuBackgroundTexture;
+    if (!mainMenuBackgroundTexture.loadFromFile("image.png")) {
+        std::cerr << "Failed to load main menu background image" << std::endl;
+        return 1;
+    }
+    sf::Sprite mainMenuBackground(mainMenuBackgroundTexture);
+    mainMenuBackground.setScale(
+        static_cast<float>(window.getSize().x) / mainMenuBackgroundTexture.getSize().x,
+        static_cast<float>(window.getSize().y) / mainMenuBackgroundTexture.getSize().y
+    );
+
+    // Load background image for welcome screen
+    sf::Texture welcomeBackgroundTexture;
+    if (!welcomeBackgroundTexture.loadFromFile("animation.png")) {
+        std::cerr << "Failed to load welcome screen background image" << std::endl;
+        return 1;
+    }
+    sf::Sprite welcomeBackground(welcomeBackgroundTexture);
+    welcomeBackground.setScale(
+        static_cast<float>(window.getSize().x) / welcomeBackgroundTexture.getSize().x,
+        static_cast<float>(window.getSize().y) / welcomeBackgroundTexture.getSize().y
+    );
+
+    // Set positions of menu options
+    sf::Font font;
+    if (!font.loadFromFile("arial.ttf")) {
+        std::cerr << "Failed to load font file" << std::endl;
+        return 1;
+    }
+
+    // Text for menu options
+    sf::Text playText("Play", font);
+    sf::Text exitText("Exit", font);
+    sf::Text escapeText("Press ESC key to exit", font); // Added text for ESC key instruction
+
+    // Set text properties
+    playText.setCharacterSize(40);
+    exitText.setCharacterSize(40);
+    escapeText.setCharacterSize(20); // Decreased the font size for ESC text
+
+    playText.setFillColor(sf::Color::Green);
+    exitText.setFillColor(sf::Color::Green);
+    escapeText.setFillColor(sf::Color::Green); // Changed ESC text color to green
+
+    playText.setStyle(sf::Text::Bold);
+    exitText.setStyle(sf::Text::Bold);
+    escapeText.setStyle(sf::Text::Bold);
+
+    // Set positions of menu options
+    playText.setPosition(window.getSize().x / 2 - playText.getGlobalBounds().width / 2, 250);
+    exitText.setPosition(window.getSize().x / 2 - exitText.getGlobalBounds().width / 2, 300);
+    escapeText.setPosition(window.getSize().x / 2 - escapeText.getGlobalBounds().width / 2,
+                           window.getSize().y - 50); // Set position for ESC text at the bottom center
+
+    // Main loop
+    enum State { MainMenu, WelcomeScreen }; // Define states
+    State currentState = MainMenu;
+
+    while (window.isOpen()) {
+        // Handle events
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+            }
+
+            // Check for key pressed events
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+                window.close(); // Close window when ESC key is pressed
+            }
+
+            // Check for mouse click events
+            if (event.type == sf::Event::MouseButtonPressed) {
+                if (event.mouseButton.button == sf::Mouse::Left) {
+                    // Check if the mouse click is within the bounds of any menu option
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+
+                    // Check if the mouse click is within the bounds of 'Play'
+                    if (playText.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        std::cout << "Play option selected" << std::endl;
+                        currentState = WelcomeScreen; // Change state to WelcomeScreen
+                    }
+
+                    // Check if the mouse click is within the bounds of 'Exit'
+                    if (exitText.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        std::cout << "Exit option selected" << std::endl;
+                        window.close();
+                    }
+                }
+            }
+        }
+
+        // Clear the window
+        window.clear();
+
+        // Draw background based on current state
+        if (currentState == MainMenu) {
+            window.draw(mainMenuBackground);
+            window.draw(playText);
+            window.draw(exitText);
+        } else if (currentState == WelcomeScreen) {
+            window.draw(welcomeBackground);
+            sf::Text welcomeText("Welcome to Game", font);
+            welcomeText.setCharacterSize(100); // Increased text size for welcome message
+            welcomeText.setFillColor(sf::Color::Green); // Set color to green
+            welcomeText.setStyle(sf::Text::Bold); // Set style to bold
+            // Centering the text
+            welcomeText.setPosition(window.getSize().x / 2 - welcomeText.getGlobalBounds().width / 2,
+                                     window.getSize().y / 2 - welcomeText.getGlobalBounds().height / 2);
+            window.draw(welcomeText);
+        }
+
+        // Draw escape instruction
+        window.draw(escapeText);
+
+        // Display the window
+        window.display();
+    }
+
+}
